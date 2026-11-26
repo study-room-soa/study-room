@@ -20,6 +20,8 @@ services:
       - "8001:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@booking-db:5432/${BOOKING_DB_NAME}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
     depends_on:
       booking-db:
         condition: service_healthy

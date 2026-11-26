@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from .database import Base, engine
 from . import models
 from .routes import router
+from .clients import client
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -10,6 +11,7 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
+        client.close()
         engine.dispose()
 
 app = FastAPI(
