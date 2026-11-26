@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from .database import get_db
 from .models import Booking
 from .schemas import BookingCreate, BookingResponse
+from .clients import check_user_exists, send_notification
 
 router = APIRouter()
 
@@ -74,6 +75,7 @@ def create_booking(
     data: BookingCreate,
     db: Session = Depends(get_db)
 ):
+    check_user_exists(data.user_id)
     validate_booking(
         db,
         data.room_id,
@@ -89,6 +91,10 @@ def create_booking(
     db.add(booking)
     db.commit()
     db.refresh(booking)
+    send_notification(
+        booking.user_id,
+        f"Your booking #{booking.id} has been confirmed."
+    )
     return booking
 
 @router.post(
@@ -185,6 +191,10 @@ def cancel_booking(
     booking.status = "cancelled"
     db.commit()
     db.refresh(booking)
+    send_notification(
+        booking.user_id,
+        f"Your booking #{booking.id} has been cancelled."
+    )
     return booking
 
 # DELETE endpoints
