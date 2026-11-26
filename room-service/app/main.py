@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.exception_handlers import http_exception_handler
 from .database import Base, engine
 from . import models
 from .routes import router
@@ -22,3 +24,16 @@ app = FastAPI(
 )
 
 app.include_router(router)
+
+@app.exception_handler(HTTPException)
+async def custom_exception_handler(
+    request: Request,
+    exc: HTTPException
+):
+    if exc.status_code == 401:
+        return JSONResponse(
+            status_code=401,
+            content={"error": exc.detail},
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    return await http_exception_handler(request, exc)
