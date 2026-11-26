@@ -3,12 +3,16 @@ from fastapi import FastAPI
 from .database import Base, engine
 from . import models
 from .routes import router
+from .clients import client
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
-    yield
-    engine.dispose()
+    try:
+        yield
+    finally:
+        client.close()
+        engine.dispose()
 
 app = FastAPI(
     title="Room Service",

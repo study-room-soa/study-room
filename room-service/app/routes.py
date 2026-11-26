@@ -6,8 +6,10 @@ from .schemas import (
     BuildingCreate,
     BuildingResponse,
     RoomCreate,
-    RoomResponse
+    RoomResponse,
+    RoomDetailResponse
 )
+from .clients import get_average_rating
 
 router = APIRouter()
 
@@ -20,7 +22,7 @@ def get_buildings(db: Session = Depends(get_db)):
 def get_rooms(db: Session = Depends(get_db)):
     return db.query(Room).all()
 
-@router.get("/rooms/{id}", response_model=RoomResponse)
+@router.get("/rooms/{id}", response_model=RoomDetailResponse)
 def get_room(id: int, db: Session = Depends(get_db)):
     room = db.get(Room, id)
     if room is None:
@@ -28,7 +30,10 @@ def get_room(id: int, db: Session = Depends(get_db)):
             status_code=404,
             detail="Room not found"
         )
-    return room
+
+    result = RoomDetailResponse.model_validate(room)
+    result.average_rating = get_average_rating(id)
+    return result
 
 # POST endpoints
 @router.post(
