@@ -19,6 +19,7 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@room-db:5432/${ROOM_DB_NAME}
+      REVIEW_SERVICE_URL: ${REVIEW_SERVICE_URL}
     depends_on:
       room-db:
         condition: service_healthy

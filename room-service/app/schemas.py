@@ -21,3 +21,9 @@ class RoomResponse(RoomCreate):
         from_attributes=True,
         populate_by_name=True
     )
+
+class RoomDetailResponse(RoomResponse):
+    average_rating: float | None = Field(
+        default=None,
+        alias="averageRating"
+    )
