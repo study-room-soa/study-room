@@ -5,10 +5,24 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${BOOKING_DB_NAME}
-    ports:
-      - "127.0.0.1:5434:5432"
     volumes:
       - booking-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${BOOKING_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  booking-service:
+    build: .
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@booking-db:5432/${BOOKING_DB_NAME}
+    depends_on:
+      booking-db:
+        condition: service_healthy
 
 volumes:
   booking-db-data:
