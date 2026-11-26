@@ -5,10 +5,23 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${ROOM_DB_NAME}
-    ports:
-      - "127.0.0.1:5433:5432"
     volumes:
       - room-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${ROOM_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  room-service:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@room-db:5432/${ROOM_DB_NAME}
+    depends_on:
+      room-db:
+        condition: service_healthy
 
 volumes:
   room-db-data:
