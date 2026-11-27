@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from .database import get_db
 from .models import Building, Room
@@ -10,8 +10,11 @@ from .schemas import (
     RoomDetailResponse
 )
 from .clients import get_average_rating
+from .auth import current_user
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[Depends(current_user)]
+)
 
 # GET endpoints
 @router.get("/buildings", response_model=list[BuildingResponse])
@@ -23,7 +26,11 @@ def get_rooms(db: Session = Depends(get_db)):
     return db.query(Room).all()
 
 @router.get("/rooms/{id}", response_model=RoomDetailResponse)
-def get_room(id: int, db: Session = Depends(get_db)):
+def get_room(
+    id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
     room = db.get(Room, id)
     if room is None:
         raise HTTPException(
@@ -32,8 +39,10 @@ def get_room(id: int, db: Session = Depends(get_db)):
         )
 
     result = RoomDetailResponse.model_validate(room)
-    result.average_rating = get_average_rating(id)
-    return result
+    result.average_rating = get_average_rating(
+        id,
+        request.headers["Authorization"]
+    )
 
 # POST endpoints
 @router.post(
