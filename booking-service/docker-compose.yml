@@ -22,6 +22,7 @@ services:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@booking-db:5432/${BOOKING_DB_NAME}
       USER_SERVICE_URL: ${USER_SERVICE_URL}
       NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       booking-db:
         condition: service_healthy
